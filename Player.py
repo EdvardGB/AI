@@ -5,11 +5,3 @@ class Player(object):
 	def __repr__(self):
 		return "x"
 
-
-	def GetLegalActions(self,state):
-		pass
-		return 0
-
-	def GetChildren(self,state):
-		pass
-		return 0

@@ -12,7 +12,10 @@ class State(object):
 		self.goalx = goalx
 		self.goaly = goaly
 		self.field[goaly][goalx] = Space(False,True)
-		self.visitCounter = 1
+		self.visitCounter = 0	#how many times this state has been "done" or "visited"
+		self.experience = 0 	#a number that changes after if it is a good(+) or a bad(-) experience 
+		self.actionSerie = []	#a series of action taken from this state. This will probably be a difference when comparing states
+		self.stateValue = 0			#a number of how good it is to bee in this state
 
 	def __repr__(self):
 		if debugg:
@@ -127,8 +130,11 @@ class State(object):
 				actions.append(s)
 		return actions
 
-
-
+		def movePlayer(self, action):
+			self.player.y = action[0]
+			self.player.x = action[1]
+			self.update()
+'''
 debugg = False
 player = Player(0,0)
 S = State("f1.txt", player, 4,4)
@@ -137,41 +143,10 @@ for i in range(0,5):
 		S.player.x = i
 		S.player.y = j
 		actions = S.getActions()
-		for x in actions:
-			S.field[x[0]][x[1]].obstructed = True
 		print(S)
 		S.createField("f1.txt")
 
-		
-
 
 '''
-	def obstructed(self,x,y):
-		if self.field[x][y] != '.' and self.field[x][y] != '#' :
-			return True
-		return False
 
-	def getActions(self, player):
-			  # TopLeft MiddleL	  BL	TopM   BM	 TopR	MR 	  BR	
-		space = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
-		if player.y == 0:
-				space = [[-1,0],[-1,1],[0,1],[1,0],[1,1]]
-		if player.y == len(self.field) -1:
-				space = [[-1,-1],[-1,0],[0,-1],[1,-1],[1,0]]
-		if player.x == 0:
-				space = [[0,-1],[0,1],[1,-1],[1,0],[1,1]]
-		if player.x == len(self.field[0]) -1:
-				space = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1]]
 		
-		personalSpace = []
-		positions = []
-		for s in space:
-			#print s[0],s[1],player.y, player.x
-
-			s[0] = s[0] + player.x
-			s[1] = s[1] + player.y
-			o = self.field[s[0]][s[1]]
-			personalSpace.append(o)
-			positions.append(s)
-		return personalSpace, positions 
-'''
