@@ -1,21 +1,26 @@
 from Space import *
 from Player import *
+from PIL import Image
 
 debugg = False
 
 
 class State(object):
-	def __init__(self, field, player, goaly, goalx):
+	def __init__(self, field, player, goaly, goalx, counter, experience, actionSerie):
 		self.field = []
 		self.player = player
 		self.createField(field)
 		self.goalx = goalx
 		self.goaly = goaly
-		self.field[goaly][goalx] = Space(False,True)
+		self.field[goaly][goalx] = Space(False,True, False)
 		self.visitCounter = 0	#how many times this state has been "done" or "visited"
 		self.experience = 0 	#a number that changes after if it is a good(+) or a bad(-) experience 
+		self.possibleValue = 0	#a number used in evaluation
 		self.actionSerie = []	#a series of action taken from this state. This will probably be a difference when comparing states
-		self.stateValue = 0			#a number of how good it is to bee in this state
+		self.dangers = []		#pits. game over if reached
+		self.equlaToStart = 0	#how equal this state is to start
+		self.visited = []
+
 
 	def __repr__(self):
 		if debugg:
@@ -31,7 +36,7 @@ class State(object):
 			print("update()")
 		if debugg:
 			print("updating goal position to: [",self.goaly, ",",self.goalx,"]")
-		self.field[self.goaly][self.goalx] = Space(False,True)
+		self.field[self.goaly][self.goalx] = Space(False,True,False)
 		if debugg:
 			print("putting player on field on position: [",self.player.y, ",",self.player.x,"]" )
 		self.field[self.player.y][self.player.x] = self.player
@@ -52,9 +57,12 @@ class State(object):
 				objectline = []
 				for s in line:
 					if s == '.':
-						objectline.append(Space(False, False))
+						objectline.append(Space(False, False, False))
+					elif s == 'O':
+						state.dangers.append(s)
+						objectline.append(Space(False, False, True))
 					else:
-						objectline.append(Space(True, False))
+						objectline.append(Space(True, False, False))
 				self.field.append(objectline)	
 
 	def getActions(self):
@@ -130,10 +138,35 @@ class State(object):
 				actions.append(s)
 		return actions
 
-		def movePlayer(self, action):
-			self.player.y = action[0]
-			self.player.x = action[1]
-			self.update()
+	def movePlayer(self, action):
+		self.visited.append(action)
+		self.field[self.player.y][self.player.x] = Space(False,False,False)
+		self.player.y = action[0]
+		self.player.x = action[1]
+		self.update()
+
+	def makeImg(self): # print bildet
+		images = [Image.new('RGB', (16,16), "white"),	# 0
+					Image.new('RGB', (16,16), "black"),	# 1
+					Image.new('RGB', (16,16), "red"),	# 2
+					Image.new('RGB', (16,16), "green"),	# 3
+					Image.new('RGB', (4,4), "blue")]	# 4
+		image = Image.new('RGB', (16*16,16*14), "white")
+		
+		for y in range(len(self.field)):
+			for x in range(len(self.field[0])):
+				if self.field[y][x].type == "Player":
+					image.paste(images[2], (x*16,y*16))
+				else:
+					if self.field[y][x].obstructed:
+						image.paste(images[1], (x*16,y*16))
+					elif self.field[y][x].goal:
+						image.paste(images[3], (x*16,y*16))
+					else:
+						image.paste(images[0], (x*16,y*16))
+		for n in self.visited:
+			image.paste(images[4], (n[1]*16 +6,n[0]*16 +6))
+		return image
 '''
 debugg = False
 player = Player(0,0)

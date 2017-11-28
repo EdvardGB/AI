@@ -1,35 +1,20 @@
 #from KnowledgeBase import * as KB
+import copy
 
 class Evaluator(object):
 	
-	'''
-	def __init__(self,depthLimit,depthVar,counterVar,visitedVar,startVar,goalpoints):
+
+	def __init__(self,depthLimit,depthVar,startVar,goalpoints):
+		self.depthLimit = depthLimit
 		self.depthVar = depthVar
-		self.counterVar = counterVar
-		self.visitedVar = visitedVar
+		#self.counterVar = counterVar
+		#self.visitedVar = visitedVar
 		self.startVar = startVar
 		self.goalpoints = goalpoints
-
-		self.depthLimit = depthLimit
-
-	'''
-
-	def getGoalValue(self,depth):
-		pass
-		#value = 
-
-		#return values based on reaching the goal
-		return value
-
-	def getValue(self, depth):
-		pass
-		#value = 
-
-		#return values based on not reaching the goal, but maybe a path that leads to goal.
-		return value
+		#self.threshold = threshold		#for what? i forgot
+		
 
 	def isTerminal(self,state):
-		pass
 		#checking if state reached goal state
 
 		if state.player.y == state.goaly and state.player.x == state.goalx:
@@ -37,12 +22,12 @@ class Evaluator(object):
 		return False 
 
 	def evaluate(self, state):
-		pass
+		
 		# prepare any preparable values and such
 		# run the evaluator
 
 		#retun a int value of how good this state is  
-		return 0
+		return self.evaluator(state,0)
 
 	def generateRiskValue(self, state, depth):
 		pass
@@ -60,35 +45,83 @@ class Evaluator(object):
 		# maybe implemented inside the recursive algo
 
 		unknownnessValue = 2	#to be changed
-		depthValue = 1 		#maybe to be changed
-		riskValue = 1 #or 10^10? Is a big number better?
+		depthValue = 1 			#maybe to be changed
+		riskValue = 1 			#or 10^10? Is a big number better?
 
 		# if something-bad-will-happen-function():
 		# 	set unknownnessValue*someVar, eks: someVar = 10^10 
+		#for pit in 
+		#if state.player
 
 		#the calculation of risk is  
 
 		# probably to be changed
-		if state.visited > 0
-			riskValue = 
-		else:
-			riskValue = 
+		#if state.visited > 0
+		#	riskValue = 
+		#else:
+		#	riskValue = 
 
-		return riskValue
+		#return riskValue
 
-	def getPossibleActionSerie(self, state, depth, memoryAction):
-		pass
+	def getPossibleActionSerie(self, state, depth):
+		#check if action is possible
+		#if not, return None
+		bestAction = None
+		bestActionSeries = []
+		bestValue = 0
 
-		return 0
+		actions = state.getActions()
+
+		for action in state.getActions():
+			fstate = copy.deepcopy(state)
+			fstate.movePlayer(action)
+			actionSeries, value = self.evaluator(fstate, depth)
+			if value > bestValue and not action in state.visited:
+				bestAction = action
+				bestActionSeries = actionSeries
+				bestValue = value
+		if bestAction == None:
+			for action in state.getActions():
+				qstate = copy.deepcopy(state)
+				if not action in state.visited:
+					bestAction = action
+		if bestAction == None:
+			bestAction = state.getActions()[0]
+		bestActionSeries.append(bestAction)
+		return bestActionSeries, bestValue
 
 	def getPossibleMemoryActionSerie(self, state, depth, memory):
 		pass
+		value = 0
+		for action in state.getActions():
+			state.movePlayer(action)
 
 		return 0
 
 	def aquireMemories(self, state):
-		memories = KB.getMemories(state) #Find nearly of equal previous states Not implemented
+		pass
+		memories = KB.getMemories(state) #Find nearly or equal previous states. Not implemented
 		return memories
+
+	def isBadState(self, state, value):
+		pass
+		#if value
+
+	def updateState(self, state, experience):
+		state.experience +=experience
+		return 0
+
+	def getGoalValue(self,state, depth):
+		#return values based on reaching the goal
+		value = self.goalpoints/(2**depth)
+		return value
+
+	def getValue(self, state, depth):
+		pass
+		#value = self.
+
+		#return values based on not reaching the goal, but maybe a path that leads to goal.
+		return 0
 
 	def evaluator(self, state, depth):
 		# may contain functions like:
@@ -96,10 +129,10 @@ class Evaluator(object):
 		# -
 
 		#if reached terminal state or depth is reached, return a value
-		if isTerminal(state):
-			return getGoalValue (depth)
+		if self.isTerminal(state):	
+			return [], self.getGoalValue(state,depth)
 		elif depth >= self.depthLimit:
-			return getValue(depth)
+			return [], self.getValue(state,depth)
 		depth = depth +1
 		actions = state.getActions()
 		for action in actions:
@@ -107,10 +140,9 @@ class Evaluator(object):
 			#####
 			# Defining values for the algorith
 
-			possibleNewState = deepcopy(state) # Creating new state equal to the current. 
-			possibleNewState.movePlayer(action) # change state to possible next state
-			memories = aquireMemories(possibleNewState)
-			riskValue = generateRiskValue(possibleNewState) #Get possible risk of doing this action. Not implemented
+			possibleNewState = copy.deepcopy(state) # Creating new state equal to the current. 
+			#memories = aquireMemories(possibleNewState)
+			#riskValue = generateRiskValue(possibleNewState) #Get possible risk of doing this action. Not implemented
 
 
 			#####
@@ -119,24 +151,42 @@ class Evaluator(object):
 			# -then checking a set of other possible action
 			# -compare all values and return best value
 			# -"checking" means:
-			# 	- generaate risk of the move
+			# 	- generate risk of the move
 			#	- see if this is a state visited before
 			#	- experience
-
+			# -pruning?
+			# -If state x<y, and y is not tolerable, add x to notPossible list
+			'''
 			if memories != None:
 				for memory in memories:
 					actionSeries = memory.actionSeries()
 					actionSeriesValue = memory.stateValue
-
 					possibleBetterActionSeries = []
 					possibleBetterActionSeriesValue = 0
 
 					for action in actionSeries:
 						#possible better actionSeries = check if other possible actions are better
 						#get value of doing the action in the memory actionseries
+						memoryState = deepcopy(state) 
+						actionseries, actionSeriesValue = getPossibleActionSerie(memoryState,depth,memory)
+						
 						possibleBetterActionSeries, possibleBetterActionSeriesValue = getPossibleActionSerie(possibleNewState, depth, action)
 						
-			else:
+
+						
+						if actionSeriesValue < possibleBetterActionSeriesValue:
+
+							return possibleBetterActionSeries, possibleBetterActionSeriesValue
+						return actionSeries, actionseries
+				
+			else:'''
+			actionSeries = []
+			actionSeriesValue = 0
+			possibleBetterActionSeries, possibleBetterActionSeriesValue = self.getPossibleActionSerie(possibleNewState, depth)
+			#if possibleBetterActionSeriesValue > actionSeriesValue:
+			actionSeries = possibleBetterActionSeries
+			actionSeriesValue = possibleBetterActionSeriesValue
+			return actionSeries, actionSeriesValue
 				#check other options
 
 			
