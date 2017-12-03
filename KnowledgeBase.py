@@ -1,5 +1,6 @@
 from State import *
 from Player import *
+import copy
 # for the comaprable function, use a function that converts to CNF and considers the truthtable
 
 # create many "rules of beliefs"/ first order logic rules, but make rules for the truthness of those rules based on variables such that
@@ -15,8 +16,13 @@ class KnowledgeBase():
 		return None
 
 	def add(self,state):
-		# sort memory based on position on map
-		key =(state.player.y, state.player.x)
+		state = copy.deepcopy(state)
+		key = (state.player.y, state.player.x)
+		if key in self.memory.keys():
+			mState = self.get(key)
+			print(key, state.experience, "+",(mState.player.y,mState.player.x), mState.experience)
+			state.experience += mState.experience
+			state.visitCounter += mState.visitCounter
 		self.memory[key] = state
 		#print(self.memory.keys())
 
