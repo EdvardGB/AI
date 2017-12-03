@@ -12,11 +12,10 @@ class State(object):
 		self.createField(field)
 		self.goalx = goalx
 		self.goaly = goaly
-		self.field[goaly][goalx] = Space(False,True, False)
-		self.visitCounter = 0	#how many times this state has been "done" or "visited"
-		self.experience = 0 	#a number that changes after if it is a good(+) or a bad(-) experience 
+		self.visitCounter = counter	#how many times this state has been "done" or "visited"
+		self.experience = experience 	#a number that changes after if it is a good(+) or a bad(-) experience 
 		self.possibleValue = 0	#a number used in evaluation
-		self.actionSerie = []	#a series of action taken from this state. This will probably be a difference when comparing states
+		self.previousSerie = []	#a series of action taken from this state. This will probably be a difference when comparing states
 		self.dangers = []		#pits. game over if reached
 		self.equlaToStart = 0	#how equal this state is to start
 		self.visited = []
@@ -27,19 +26,20 @@ class State(object):
 			print("Representing()")
 		self.update()
 		for line in self.field:
-			print (self.get_nice_string(line))
-		print("player: ", self.player.y, ",", self.player.x)
+			print(self.get_nice_string(line))
+		print("player: (", self.player.y, ",", self.player.x, "), exp:", self.experience, "visited:",self.visitCounter)
 		return ""
 
 	def update(self):
 		if debugg:
 			print("update()")
-		if debugg:
-			print("updating goal position to: [",self.goaly, ",",self.goalx,"]")
-		self.field[self.goaly][self.goalx] = Space(False,True,False)
-		if debugg:
-			print("putting player on field on position: [",self.player.y, ",",self.player.x,"]" )
-		self.field[self.player.y][self.player.x] = self.player
+		if not len(self.field) == 0:
+			if debugg:
+				print("updating goal position to: [",self.goaly, ",",self.goalx,"]")
+			self.field[self.goaly][self.goalx] = Space(False,True,False)
+			if debugg:
+				print("putting player on field on position: [",self.player.y, ",",self.player.x,"]" )
+			self.field[self.player.y][self.player.x] = self.player
 		
 
 	def get_nice_string(self, list_or_iterator):
@@ -47,6 +47,8 @@ class State(object):
 
 	def createField(self, file):
 		self.field = []
+		if file == None:
+			return ""
 		if debugg:
 			print("createField()")
 		with open(file) as f:

@@ -1,4 +1,4 @@
-#from KnowledgeBase import * as KB
+from KnowledgeBase import * 
 import copy
 
 class Evaluator(object):
